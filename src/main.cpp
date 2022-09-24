@@ -2,6 +2,7 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <cmath>
 
 
 
@@ -26,7 +27,7 @@ std::string Take_input()
 }
 
 
-int Precendence(char prec)
+int Set_Precendence(char prec)
 {
     switch(prec)
     {
@@ -94,7 +95,7 @@ std::string Infix_to_postfix(std::string infix)
                 stack.push(infix[i]);
                    
             }
-            else if (Precendence(infix[i])<= Precendence(stack.top()))     
+            else if (Set_Precendence(infix[i])<= Set_Precendence(stack.top()))     
             {
                 while (!stack.empty())                      // it will pop till the 
                 {
@@ -104,7 +105,7 @@ std::string Infix_to_postfix(std::string infix)
                     {
                         break;
                     }
-                    else if(Precendence(infix[i]) > Precendence(stack.top()))
+                    else if(Set_Precendence(infix[i]) > Set_Precendence(stack.top()))
                     {
                         break;
                     }
@@ -136,13 +137,187 @@ std::string Infix_to_postfix(std::string infix)
 
 }
 
+
+std::vector <std::string> Handling_digits_floats(std::string infix)    
+{
+    std::vector<std::string> str;
+
+    std::string temp;
+    bool init = false;
+    
+    for(int i = 0 ; i < infix.length(); )
+    {
+        if((int)infix[i] >= 48 && (int)infix[i] <= 57)
+        {
+            temp += infix[i];
+        }
+        else if(infix[i] == '.')
+        {
+            init = true;
+            temp += infix[i];
+        }
+        else
+        {
+            if (infix[i] == '(' || infix[i] == ')' )
+            {
+                i++;
+                continue;
+            }
+            
+            if(init)
+            {
+                //stof the string cuz its having a . and clear the temp;
+                // std::cout << temp << std::endl;
+                str.push_back(temp);
+                temp.clear();
+            }
+            else
+            {
+                // stoi the string cuz its not having the . and clear the temp
+                // std::cout << temp << std::endl;
+                str.push_back(temp);
+                temp.clear();
+            }
+        
+            
+            init = false;
+        }
+        
+        if(i == infix.length() -1)
+        {
+            // std::cout << temp << std::endl;
+            str.push_back(temp);
+            temp.clear();
+        }
+        i++;
+        
+    }
+
+
+    return str;
+}
+
+
+std::string Postfix_Evaluation(std::string postfix, std::string infix )
+{
+    
+   
+
+    std::vector <std::string> str_vector = Handling_digits_floats(infix); // our vector with digits and double values
+    
+    
+    std::stack <std::string> stack;
+    
+    for(int i = 0 ; i < str_vector.size(); i++)
+    {
+        std::cout <<str_vector[i].size() <<" size of = " << str_vector[i] <<std::endl;
+    }
+    
+    int cnt = 0 ;
+    for(int i = 0 ; i < postfix.size(); )
+    {
+        if((int)postfix[i] >= 48 && (int)postfix[i] <= 57 )
+        {
+            i = i + str_vector[cnt].size();
+            stack.push(str_vector[cnt++]);                  // just push
+            // std::cout << str_vector[cnt++] << std::endl;
+        }
+        else
+        {
+            // std::cout << postfix[i] << std::endl;
+            
+            double a , b , c;
+            switch(postfix[i])
+            {
+                case '+':
+                b = std::stod(stack.top());
+                stack.pop();
+                a = std::stod(stack.top());
+                stack.pop();
+                c = a + b;
+                stack.push(std::to_string(c));
+                // std::cout << "its plus" << std::endl;
+                break;
+                
+                case '-':
+                b = std::stod(stack.top());
+                stack.pop();
+                a = std::stod(stack.top());
+                stack.pop();
+                c = a - b;
+                stack.push(std::to_string(c));
+                // std::cout << "its sub" << std::endl;
+                break;
+                
+                
+                case '*':
+                b = std::stod(stack.top());
+                stack.pop();
+                a = std::stod(stack.top());
+                stack.pop();
+                c = a * b;
+                stack.push(std::to_string(c));
+                // std::cout << "its multi" << std::endl;
+                break;
+                
+                
+                case '/':
+                b = std::stod(stack.top());
+                stack.pop();
+                if(b == 0 )
+                {
+                    std::cout << "Can't divide by zero " << std::endl;
+                    return 0;
+                }
+                a = std::stod(stack.top());
+                stack.pop();
+                c = a / b;
+                stack.push(std::to_string(c));
+                // std::cout << "its divide" << std::endl;
+                break;
+                
+                
+                case '^':
+                b = std::stod(stack.top());
+                stack.pop();
+                a = std::stod(stack.top());
+                stack.pop();
+                c = std::pow(a , b);
+                stack.push(std::to_string(c));
+                // std::cout << "its power" << std::endl;
+                break;
+                
+                
+            };
+            
+            i++;
+           
+        }
+    }
+    
+    return stack.top();
+}
+
 int main()
 {
     std::string infix_str = Remove_spaces(Take_input());
+    std::cout << "SO here is your infix string : ";
+    std::cout << infix_str << std::endl;
 
     std::string postfix_str = Infix_to_postfix(infix_str);
 
     std::cout << "SO here is your postfix string : ";
 
-    std::cout << postfix_str << std::endl;
+    std::cout << postfix_str << std::endl;                  // now i have this postfix expression we have to evaluate it 
+
+    std::string Total_ans =  Postfix_Evaluation(postfix_str,infix_str);
+
+    std::cout << "Your answer is : " << Total_ans << std::endl;
+    
+    return 0 ;
 }
+
+
+
+
+
